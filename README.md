@@ -1,4 +1,4 @@
-# rkit ✨
+# rkit 🕷️
 A Linux LD_PRELOAD based userland rootkit that hides files, monitors inward/outward network connections, hides processes, and more.
 
 <div align="center">
