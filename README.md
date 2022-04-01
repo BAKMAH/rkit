@@ -23,13 +23,13 @@ functions have already been hooked before the rootkit is properly initialized. `
 - read
 - open
 - send
-- fopen
 - write
 - fgets
+- fopen
 - execve
 - readdir
-- fopen64
 - connect
+- fopen64
 
 ### Built with
 - C
