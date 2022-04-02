@@ -27,6 +27,7 @@ functions have already been hooked before the rootkit is properly initialized. `
 - fgets
 - fopen
 - execve
+- openat
 - readdir
 - connect
 - fopen64
