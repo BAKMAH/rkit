@@ -10,6 +10,7 @@ A Linux LD_PRELOAD based userland rootkit that hides files, monitors outgoing ne
 functions have already been hooked before the rootkit is properly initialized. `rkit` Also checks for byte-patch hooking.
 
 ### Features
+- Anti VM
 - File hiding
 - Port blocking
 - String hiding
@@ -17,7 +18,6 @@ functions have already been hooked before the rootkit is properly initialized. `
 - Ptrace detection
 - Monitoring TCP connections
 - Anti rootkit & hooking detection
-- Prevent other processes from accessing our memory space
 
 ### Hooked functions
 - read
@@ -26,7 +26,6 @@ functions have already been hooked before the rootkit is properly initialized. `
 - write
 - fgets
 - fopen
-- execve
 - openat
 - readdir
 - connect
