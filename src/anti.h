@@ -26,16 +26,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
+#include <sys/sysinfo.h>
 
 
 /*
     *    src/anti.h
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
+
+bool vm_cpu(void);
+bool vm_uptime(void);
+bool detect_jmp_hook(void);
+bool ptrace_detection(void);
+bool DetectHypervisors(void);
+bool check_dl_information(void);
+bool dl_detect_function_hooking(void);
+bool check_library_name(const uint8_t *library);
+int32_t check_for_hidden_library(const uint8_t *library);
 
 #endif

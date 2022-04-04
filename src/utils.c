@@ -21,10 +21,28 @@
 
 /*
     *    src/utils.c
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
+
+/**
+ * @brief Checks if the given string only contains digits.
+ * @param string The string.
+ * @returns True if the string only contains digits, false if otherwise.
+ */
+
+bool check_digit(const uint8_t *string) {
+  while (*string)
+    if (!isdigit(*string++))
+      return false;
+  return true;
+}
+
+/**
+ * @brief Outputs a log.
+ * @param message The message that will be printed to the screen.
+ */
 
 void rkit_log(const uint8_t *message, ...) {
   va_list arguments;

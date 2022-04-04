@@ -17,6 +17,7 @@
  */
 
 #include "anti.h"
+#include "utils.h"
 
 
 /*
@@ -26,7 +27,7 @@
 */
 
 
-const uint8_t *blacklisted_libraries = {
+const uint8_t *blacklisted_libraries[] = {
   "vlany",
   "inject",
   "rootkit"
@@ -44,7 +45,35 @@ const uint8_t *functions[] = {
   "send",
   "recv",
   "puts",
+  "execve"
 };
+
+/**
+ * @brief Checks for the amount of processors.
+ * @returns True if the amount is low, false if otherwise.
+ */
+
+bool vm_cpu(void) {
+  struct sysinfo info;
+  if (sysconf(_SC_NPROCESSORS_CONF) < 2)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Checks the uptime of the system.
+ * @returns True if the uptime has been less than 600 seconds, false if otherwise.
+ */
+
+bool vm_uptime(void) {
+  struct sysinfo info;
+  sysinfo(&info);
+
+  if (info.uptime < 600)
+    return true;
+
+  return false;
+}
 
 /**
  * @brief Checks for ptrace.
@@ -81,7 +110,7 @@ bool ptrace_detection(void) {
  */
 
 bool DetectHypervisors(void) {
-  uint8_t buffer[BUFSIZ];
+  uint8_t buffer[BUFSIZ] = {0};
 
 #ifdef DEBUG
   rkit_log("Checking for hypervisors...\n");
@@ -110,26 +139,22 @@ bool DetectHypervisors(void) {
 }
 
 /**
- * @brief Checks if LD_PRELOAD has been set.
- * @returns True if LD_PRELOAD has been set, false if otherwise.
- */
-
-bool check_env_var(void) {
-  if (getenv("LD_PRELOAD"))
-    return true;
-  return false;
-}
-
-/**
  * @brief Iterates over the array of function names, gets the pointer to the symbol, and then checks the bytes.
+ * @returns True if a hooked function was detected, false if otherwise.
  */
 
-void detect_jmp_hook(void) {
+bool detect_jmp_hook(void) {
+  bool ret = false;
   for (int32_t i = 0; i < (sizeof(functions) / sizeof(functions[0])); i++) {
     uint8_t *bytes = (uint8_t *)dlsym(RTLD_NEXT, functions[i]);
-    if ((bytes[0] == 0xE9 || bytes[0] == 0xFF) && bytes[1] == 0x25)
-      rmkit_log("%s(); has been hooked | JMP Opcode Detected!");
+    if ((bytes[0] == 0xE9 || bytes[0] == 0xFF) && bytes[1] == 0x25) {
+      ret = true;
+#ifdef DEBUG
+      rkit_log("%s(); has been hooked | JMP Opcode Detected!");
+#endif
+    }
   }
+  return ret;
 }
 
 /**
@@ -158,9 +183,15 @@ int32_t check_for_hidden_library(const uint8_t *library) {
   return 1;
 }
 
+/**
+ * @brief Checks if the library is blacklisted or not.
+ * @param library The target library.
+ * @returns true if the library is blacklisted, false if it isn't.
+ */
+
 bool check_library_name(const uint8_t *library) {
   for (int32_t i = 0; i < (sizeof(blacklisted_libraries) / sizeof(blacklisted_libraries[0])); i++)
-    if (strstr(library, blacklisted_libraries[i]) == 0)
+    if (strncmp(library, blacklisted_libraries[i], strlen(blacklisted_libraries[i])) == 0)
       return true;
   return false;
 }
@@ -177,11 +208,17 @@ bool check_dl_information(void) {
   if (dlinfo(dlopen(NULL, RTLD_LAZY), 2, &map) == -1)
     return false;
 
-  while (map != NULL) {
+  while (map) {
     if (strlen(map->l_name) > 0) {
-#if DEBUG
+#ifdef DEBUG
       printf("[%s] -------------> [%p]\n", map->l_name, (void *)map->l_addr);
 #endif
+      if (check_for_hidden_library(map->l_name) == 1) {
+#ifdef DEBUG
+      rkit_log("Library '%s' is hidden!\n", map->l_name);
+#endif
+      }
+      
       if (check_library_name(map->l_name))
         return true;
       index++;
@@ -217,7 +254,7 @@ bool dl_detect_function_hooking(void) {
       dladdr(temp, &info_temp);
 
 #ifdef DEBUG
-      rmkit_log("%s(); has been hooked!\n", function); 
+      rkit_log("%s(); has been hooked!\n", function); 
 #endif
       counter++;
     }

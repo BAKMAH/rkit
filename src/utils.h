@@ -19,6 +19,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -29,9 +30,12 @@
 
 /*
     *    src/utils.h
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
+
+bool check_digit(const uint8_t *string);
+void rkit_log(const uint8_t *message, ...);
 
 #endif

