@@ -7,7 +7,7 @@ A Linux LD_PRELOAD based userland rootkit that hides files, monitors outgoing ne
 
 ## Description
 `rkit` hooks several functions in order to hide itself, and avoid being detected. `rkit` comes with an anti rootkit feature that detects if
-functions have already been hooked before the rootkit is properly initialized. `rkit` Also checks for byte-patch hooking.
+functions have already been hooked before the rootkit is properly initialized. `rkit` also checks for byte-patch hooking.
 
 ### Features
 - Anti VM
