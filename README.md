@@ -2,7 +2,7 @@
 A Linux LD_PRELOAD based userland rootkit that hides files, monitors outgoing network connections, hides strings, hides processes, and more.
 
 <div align="center">
-    <img src="https://user-images.githubusercontent.com/95945026/161648035-36bb01b8-1066-4e61-b945-a29aae1e72e9.png" width="350px"><br>
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616483.png" width="250px"><br>
 </div>
 
 ## Description
