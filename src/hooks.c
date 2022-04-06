@@ -211,7 +211,7 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 }
 
 /**
- * @brief Connect hook, checks for blacklisted files.
+ * @brief Connect hook, checks for blacklisted IP addresses.
  * @param sockfd The file descriptor.
  * @param addr The address.
  * @param addrlen The size of the 'addr' struct.
