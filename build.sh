@@ -7,4 +7,4 @@ src/anti.c \
 src/rkit.c \
 src/utils.c \
 src/hooks.c \
--DDEBUG -lpthread -ldl -w
+-lpthread -ldl -w
