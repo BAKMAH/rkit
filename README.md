@@ -36,7 +36,7 @@ functions have already been hooked before the rootkit is properly initialized. `
 
 ## Getting started
 ### Compiling
-To compile `rkit`, simply execute the following commands:
+To compile `rkit`, simply execute the following command:
 - `./build.sh`
 
 ### Configure
