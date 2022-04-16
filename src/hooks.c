@@ -60,7 +60,7 @@ const uint32_t blacklisted_ports[] = {
 
 bool check_blacklisted_files(const uint8_t *string) {
   for (int32_t i = 0; i < (sizeof(blacklisted_files) / sizeof(blacklisted_files[0])); i++)
-    if (strncmp(string, blacklisted_files[i], strlen(blacklisted_files[i])))
+    if (strncmp(string, blacklisted_files[i], strlen(blacklisted_files[i])) == 0)
       return true;
   return false;
 }
@@ -86,7 +86,7 @@ bool check_blacklisted_strings(const uint8_t *string) {
 
 bool check_blacklisted_ip_addresses(const uint8_t *string) {
   for (int32_t i = 0; i < (sizeof(blacklisted_ip_addresses) / sizeof(blacklisted_ip_addresses[0])); i++)
-    if (strncmp(string, blacklisted_ip_addresses[i], strlen(blacklisted_ip_addresses[i])))
+    if (strncmp(string, blacklisted_ip_addresses[i], strlen(blacklisted_ip_addresses[i])) == 0)
       return true;
   return false;
 }
